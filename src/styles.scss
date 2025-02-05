@@ -1,0 +1,15 @@
+/* You can add global styles to this file, and also import other style files */
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+@theme {
+    --color-primary: oklch(79.31% 0.1514 79.92);
+    --color-accent: oklch(48.16% 0.2688 284.25);
+    --color-muted: oklch(96.74% 0.0013 286.38);
+    --color-dark: oklch(29.31% 0 0);
+    --color-pitchdark: oklch(20.9% 0 0);
+}
+
+.test {
+    text-align: left;
+}
