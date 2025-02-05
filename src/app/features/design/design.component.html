@@ -1,0 +1,196 @@
+<div class="flex flex-col h-[calc(100vh-72px)] overflow-x-hidden">
+  <div class="relative grow grid grid-cols-[300px_1fr_300px]">
+    <div class="p-4 flex flex-col">
+      <p class="text-base border-b-2 pb-3 border-gray-300">List</p>
+      @for (obj of objects(); track $index) {
+      <div
+        class="p-2 hover:bg-gray-100/90 hover:cursor-pointer"
+        (click)="setActiveObj(obj)"
+      >
+        {{ obj.name }}
+      </div>
+      } @empty {
+      <div class="p-2">No Objects</div>
+      }
+    </div>
+
+    <!-- Floating Action Bar -->
+    <div class="absolute w-full z-1 bottom-4">
+      <div
+        class="w-fit mx-auto shadow-md bg-white flex gap-2 p-2 ring ring-gray-300 rounded-md"
+      >
+        <button
+          iconStart="@tui.rectangle-horizontal"
+          appearance="outline"
+          size="m"
+          (click)="addRectangle()"
+          tuiButton
+          [style]="'color: black;'"
+        >
+          Rectangle
+        </button>
+        <button
+          iconStart="@tui.circle"
+          appearance="outline"
+          size="m"
+          (click)="addCircle()"
+          tuiButton
+          [style]="'color: black;'"
+        >
+          Circle
+        </button>
+        <button
+          iconStart="@tui.type"
+          appearance="outline"
+          size="m"
+          (click)="addText()"
+          tuiButton
+          [style]="'color: black;'"
+        >
+          Text
+        </button>
+        <button
+          iconStart="@tui.upload"
+          appearance="outline"
+          size="m"
+          (click)="addText()"
+          tuiButton
+          [style]="'color: black;'"
+        >
+          Upload
+        </button>
+        <button
+          [iconStart]="drawMode() ? '@tui.pencil-off' : '@tui.pencil'"
+          appearance="outline"
+          size="m"
+          (click)="toggleDrawMode()"
+          tuiButton
+          [style]="'color: black;'"
+        >
+          {{ drawMode() ? "Cancel" : "Draw" }}
+        </button>
+        <button
+          iconStart="@tui.save"
+          appearance="outline"
+          size="m"
+          (click)="saveCanvas()"
+          tuiButton
+          [style]="'color: black;'"
+        >
+          Save
+        </button>
+        <button
+          appearance="outline"
+          size="m"
+          (click)="toggleViewMode()"
+          tuiButton
+          [style.color]="'black'"
+        >
+          View Type: {{ viewType() }}
+        </button>
+      </div>
+    </div>
+
+    <div id="canvas-container" class="ring-2 ring-gray-300 shadow-md">
+      <app-canvas class="grow"></app-canvas>
+    </div>
+
+    <!-- Properties -->
+    <div class="p-4 flex flex-col">
+      <p class="text-base border-b-2 pb-3 border-gray-300">Properties</p>
+      <p class="p-2">
+        {{ selectedObjProps() | json }}
+      </p>
+      @if (selectedObjProps()) {
+      <div class="grid grid-cols-1 md:grid-cols-2 p-2 gap-4">
+        <div class="grid gap-1">
+          <label for="x">X</label>
+          <tui-textfield tuiTextfieldSize="m" [tuiTextfieldCleaner]="false">
+            <input
+              id="x"
+              name="x"
+              [invalid]="false"
+              [(ngModel)]="selectedObjProps()!.x"
+              (change)="handleInputChange($event)"
+              (blur)="handleOnBlur()"
+              tuiTextfield
+              type="number"
+            />
+          </tui-textfield>
+        </div>
+        <div class="grid gap-1">
+          <label for="y">Y</label>
+          <tui-textfield tuiTextfieldSize="m" [tuiTextfieldCleaner]="false">
+            <input
+              id="y"
+              name="y"
+              [invalid]="false"
+              [(ngModel)]="selectedObjProps()!.y"
+              (change)="handleInputChange($event)"
+              (blur)="handleOnBlur()"
+              tuiTextfield
+              type="number"
+            />
+          </tui-textfield>
+        </div>
+        <div class="grid gap-1">
+          <label for="width">Width</label>
+          <tui-textfield tuiTextfieldSize="m" [tuiTextfieldCleaner]="false">
+            <input
+              id="width"
+              name="width"
+              [invalid]="false"
+              [(ngModel)]="selectedObjProps()!.width"
+              (change)="handleInputChange($event)"
+              (blur)="handleOnBlur()"
+              tuiTextfield
+              type="number"
+            />
+          </tui-textfield>
+        </div>
+        <div class="grid gap-1">
+          <label for="height">Height</label>
+          <tui-textfield tuiTextfieldSize="m" [tuiTextfieldCleaner]="false">
+            <input
+              id="height"
+              name="height"
+              [invalid]="false"
+              [(ngModel)]="selectedObjProps()!.height"
+              (change)="handleInputChange($event)"
+              (blur)="handleOnBlur()"
+              tuiTextfield
+              type="number"
+            />
+          </tui-textfield>
+        </div>
+        <div class="grid gap-1">
+          <label for="angle">Angle</label>
+          <tui-textfield tuiTextfieldSize="m" [tuiTextfieldCleaner]="false">
+            <input
+              id="angle"
+              name="angle"
+              [invalid]="false"
+              [(ngModel)]="selectedObjProps()!.angle"
+              (change)="handleInputChange($event)"
+              (blur)="handleOnBlur()"
+              tuiTextfield
+              type="number"
+            />
+          </tui-textfield>
+        </div>
+        <div class="col-span-2">
+          <tui-input-color
+            id="color"
+            [colors]="palette"
+            [(ngModel)]="selectedObjProps()!.fill"
+          >
+            Color
+          </tui-input-color>
+        </div>
+      </div>
+      } @else {
+      <p class="p-2">Pick an object</p>
+      }
+    </div>
+  </div>
+</div>

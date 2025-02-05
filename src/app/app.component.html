@@ -1,0 +1,8 @@
+<tui-root
+  class="min-h-screen overflow-hidden"
+  [className]="themeService.isLight() ? '' : 'dark'"
+>
+  <app-navbar></app-navbar>
+  <router-outlet></router-outlet>
+  <app-footer></app-footer>
+</tui-root>
