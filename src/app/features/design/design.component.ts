@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  OnDestroy,
   OnInit,
   signal,
   viewChild,
@@ -25,7 +26,7 @@ import {
   TuiInputColorModule,
 } from '@taiga-ui/legacy';
 import { FormsModule } from '@angular/forms';
-import { CanvasService } from '../../core/canvas/canvas.service';
+import { CanvasService } from '../../core/services/canvas.service';
 import { FabricObject } from 'fabric';
 
 @Component({
@@ -42,7 +43,7 @@ import { FabricObject } from 'fabric';
   templateUrl: './design.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DesignComponent {
+export class DesignComponent implements OnDestroy {
   canvasRef = viewChild(CanvasComponent);
   activeItemIndex = 0;
   drawMode = signal(false);
@@ -53,6 +54,10 @@ export class DesignComponent {
   selectedObjProps = computed(() => this.canvasService.selectedObjProps());
 
   constructor(private canvasService: CanvasService) {}
+
+  ngOnDestroy(): void {
+    this.canvasService.objects.set([]);
+  }
 
   addRectangle() {
     const fabricCanvas = this.canvasRef();
