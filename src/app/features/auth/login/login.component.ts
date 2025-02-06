@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -13,7 +13,7 @@ import {
   TuiPassword,
   tuiValidationErrorsProvider,
 } from '@taiga-ui/kit';
-import { AuthService } from '../../../core/auth/auth.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { LoginInput } from '../../../types/auth.types';
 
 @Component({
@@ -58,6 +58,8 @@ export class LoginComponent {
     this.authService.login(input).subscribe({
       next: (res) => {
         console.log(res);
+        localStorage.setItem('auth', 'true');
+        this.authService.isAuthenticated.set(true);
       },
       error: (err) => console.log('Failed to login: ', err),
     });

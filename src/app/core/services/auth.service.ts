@@ -1,8 +1,13 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, signal } from '@angular/core';
-import { catchError, throwError } from 'rxjs';
-import { LoginInput, RegisterInput, UserProfile } from '../../types/auth.types';
+import {
+  InitialProfile,
+  LoginInput,
+  RegisterInput,
+  UserProfile,
+} from '../../types/auth.types';
 import { AuthConfig, OAuthService } from 'angular-oauth2-oidc';
+import { BaseService } from './base.service';
 
 const authConfig: AuthConfig = {
   issuer: 'https://accounts.google.com',
@@ -16,11 +21,15 @@ const authConfig: AuthConfig = {
 @Injectable({
   providedIn: 'root',
 })
-export class AuthService {
-  protected BACKEND_URL = 'http://localhost:8080/api/auth';
-  user = signal<UserProfile | null>(null);
+export class AuthService extends BaseService {
+  user = signal<UserProfile>(InitialProfile);
+  isAuthenticated = signal(!!localStorage.getItem('auth'));
 
-  constructor(private http: HttpClient, private oAuthService: OAuthService) {
+  constructor(
+    protected override http: HttpClient,
+    private oAuthService: OAuthService
+  ) {
+    super(http);
     this.initConfiguration();
   }
 
@@ -29,41 +38,32 @@ export class AuthService {
     this.oAuthService.setupAutomaticSilentRefresh();
     this.oAuthService.loadDiscoveryDocumentAndTryLogin().then(() => {
       if (this.oAuthService.hasValidIdToken()) {
+        localStorage.setItem('auth', 'true');
         const profile = this.oAuthService.getIdentityClaims();
         this.user.set({
           name: profile['name'],
           email: profile['email'],
           picture: profile['picture'],
         });
+        this.isAuthenticated.set(true);
       }
     });
   }
 
   login(input: LoginInput) {
-    return this.http.post(`${this.BACKEND_URL}/login`, input).pipe(
-      catchError((error) => {
-        console.error('Login failed: ', error);
-        return throwError(() => error);
-      })
-    );
+    return this.post(`${this.BACKEND_URL}/auth/login`, input);
   }
 
   register(input: RegisterInput) {
-    return this.http.post(`${this.BACKEND_URL}/register`, input).pipe(
-      catchError((error) => {
-        console.error('Register failed: ', error);
-        return throwError(() => error);
-      })
-    );
+    return this.post(`${this.BACKEND_URL}/auth/register`, input);
   }
 
   logout() {
-    return this.http.post(`${this.BACKEND_URL}/logout`, '').pipe(
-      catchError((error) => {
-        console.error('Logout failed: ', error);
-        return throwError(() => error);
-      })
-    );
+    return this.post(`${this.BACKEND_URL}/auth/logout`, '');
+  }
+
+  hasValidAccessToken() {
+    return this.oAuthService.hasValidAccessToken();
   }
 
   loginWithGoogle() {
@@ -73,19 +73,13 @@ export class AuthService {
   logoutWithGoogle() {
     this.oAuthService.revokeTokenAndLogout();
     this.oAuthService.logOut();
-    this.user.set(null);
+    localStorage.removeItem('auth');
+    this.user.set(InitialProfile);
+    this.isAuthenticated.set(false);
   }
 
   getUserProfile() {
     if (!this.oAuthService.hasValidAccessToken()) return;
     return this.oAuthService.getIdentityClaims();
-  }
-
-  getUserProfileAlt() {
-    if (!this.oAuthService.hasValidAccessToken()) {
-      console.warn("Don't have access token");
-      return Promise.reject('User not logged in');
-    }
-    return this.oAuthService.loadUserProfile();
   }
 }

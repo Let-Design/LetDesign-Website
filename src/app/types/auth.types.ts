@@ -1,3 +1,5 @@
+export const InitialProfile: UserProfile = { name: '', email: '', picture: '' };
+
 export interface UserProfile {
   name: string;
   email: string;

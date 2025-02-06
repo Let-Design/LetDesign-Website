@@ -12,14 +12,13 @@ import {
   TuiFallbackSrcPipe,
   TuiIcon,
 } from '@taiga-ui/core';
-import { ThemeService } from '../../core/theme/theme.service';
-import { AuthService } from '../../core/auth/auth.service';
+import { ThemeService } from '../../core/services/theme.service';
+import { AuthService } from '../../core/services/auth.service';
 import { TuiAvatar, TuiAvatarOutline } from '@taiga-ui/kit';
 import { TuiActiveZone } from '@taiga-ui/cdk/directives/active-zone';
 import { TuiObscured } from '@taiga-ui/cdk/directives/obscured';
 import { AsyncPipe } from '@angular/common';
-import { OAuthService } from 'angular-oauth2-oidc';
-import { UserProfile } from '../../types/auth.types';
+import { InitialProfile, UserProfile } from '../../types/auth.types';
 
 @Component({
   selector: 'app-navbar',
@@ -38,22 +37,16 @@ import { UserProfile } from '../../types/auth.types';
   templateUrl: './navbar.component.html',
 })
 export class NavbarComponent {
-  userProfile = signal<UserProfile | null>({
-    name: '',
-    email: '',
-    picture: '',
-  });
-  isAuthenticated = signal(false);
+  userProfile = signal<UserProfile>(InitialProfile);
+  isAuthenticated = computed(() => this.authService.isAuthenticated());
   protected open = false;
 
   constructor(
     public themeService: ThemeService,
-    private oAuthService: OAuthService,
     private authService: AuthService,
     private cdr: ChangeDetectorRef
   ) {
     effect(() => {
-      this.isAuthenticated.set(this.oAuthService.hasValidIdToken());
       this.userProfile.set(this.authService.user());
       this.cdr.detectChanges();
     });
@@ -74,10 +67,14 @@ export class NavbarComponent {
   }
 
   logout() {
-    if (this.oAuthService.hasValidAccessToken()) {
+    if (this.authService.hasValidAccessToken()) {
       this.authService.logoutWithGoogle();
     } else {
-      this.authService.logout();
+      this.authService.logout().subscribe((res) => {
+        console.log(res);
+        this.authService.isAuthenticated.set(false);
+        localStorage.removeItem('auth');
+      });
     }
   }
 }

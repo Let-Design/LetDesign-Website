@@ -12,7 +12,7 @@ import {
   TuiPassword,
   tuiValidationErrorsProvider,
 } from '@taiga-ui/kit';
-import { AuthService } from '../../../core/auth/auth.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { RegisterInput } from '../../../types/auth.types';
 import { AsyncPipe } from '@angular/common';
 
@@ -59,6 +59,8 @@ export class RegisterComponent {
     this.authService.register(input).subscribe({
       next: (res) => {
         console.log(res);
+        localStorage.setItem('auth', 'true');
+        this.authService.isAuthenticated.set(true);
       },
       error: (err) => console.error('Failed to register: ', err),
     });

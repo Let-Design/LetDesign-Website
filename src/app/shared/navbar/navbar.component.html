@@ -31,7 +31,7 @@
     <tui-avatar
       size="m"
       class="hover:cursor-pointer"
-      [src]="userProfile()!.picture | tuiFallbackSrc : '@tui.user' | async"
+      [src]="userProfile().picture | tuiFallbackSrc : '@tui.user' | async"
       tuiAvatarOutline="gray/90"
       [tuiDropdown]="dropdownContent"
       [tuiDropdownManual]="open"
@@ -42,7 +42,7 @@
     >
       <ng-template #dropdownContent>
         <div class="flex flex-col gap-2 p-4">
-          <p>{{ "Name: " + userProfile()!.name }}</p>
+          <p>{{ "Name: " + userProfile().name }}</p>
           <button
             (click)="logout()"
             class="mt-2"
@@ -58,13 +58,13 @@
     } @else {
     <button
       class="text-black bg-white ring ring-gray-300 px-4 py-2 rounded-md hover:bg-gray-100/90 hover:cursor-pointer"
-      routerLink="/login"
+      routerLink="/auth/login"
     >
       Login
     </button>
     <button
       class="text-white bg-pitchdark px-4 py-2 rounded-md hover:bg-pitchdark/90 dark:hover:bg-gray-800/90 hover:cursor-pointer"
-      routerLink="/register"
+      routerLink="/auth/register"
     >
       Join Us
     </button>

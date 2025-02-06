@@ -26,7 +26,7 @@ import {
   TuiInputColorModule,
 } from '@taiga-ui/legacy';
 import { FormsModule } from '@angular/forms';
-import { CanvasService } from '../../core/canvas/canvas.service';
+import { CanvasService } from '../../core/services/canvas.service';
 import { FabricObject } from 'fabric';
 
 @Component({
