@@ -32,6 +32,7 @@
     "@taiga-ui/layout": "^4.22.0",
     "@taiga-ui/styles": "^4.22.0",
     "@tailwindcss/postcss": "^4.0.3",
+    "angular-oauth2-oidc": "^19.0.0",
     "fabric": "^6.5.4",
     "postcss": "^8.5.1",
     "rxjs": "~7.8.0",

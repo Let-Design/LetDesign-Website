@@ -27,6 +27,35 @@
         [style.color]="themeService.isLight() ? 'black' : 'white'"
       />
     </button>
+    @if (isAuthenticated()) {
+    <tui-avatar
+      size="m"
+      class="hover:cursor-pointer"
+      [src]="userProfile()!.picture | tuiFallbackSrc : '@tui.user' | async"
+      tuiAvatarOutline="gray/90"
+      [tuiDropdown]="dropdownContent"
+      [tuiDropdownManual]="open"
+      [tuiObscuredEnabled]="open"
+      (tuiActiveZoneChange)="onActiveZone($event)"
+      (tuiObscured)="onObscured($event)"
+      (click)="onClick()"
+    >
+      <ng-template #dropdownContent>
+        <div class="flex flex-col gap-2 p-4">
+          <p>{{ "Name: " + userProfile()!.name }}</p>
+          <button
+            (click)="logout()"
+            class="mt-2"
+            tuiButton
+            size="s"
+            [style]="'background: #181818'"
+          >
+            Sign out
+          </button>
+        </div>
+      </ng-template>
+    </tui-avatar>
+    } @else {
     <button
       class="text-black bg-white ring ring-gray-300 px-4 py-2 rounded-md hover:bg-gray-100/90 hover:cursor-pointer"
       routerLink="/login"
@@ -39,5 +68,6 @@
     >
       Join Us
     </button>
+    }
   </div>
 </nav>
