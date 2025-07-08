@@ -25,9 +25,8 @@ import {
   initializeVerticalLine,
   pasteObject,
   removeObject,
-} from '../../../utils/fabricUtils';
-import { SelectedObjectProperty } from '../../../types/editor.types';
-import { CanvasService } from '../../../core/services/canvas.service';
+} from '@shared/utils/fabric-utils';
+import { CanvasService } from '@core/services/canvas.service';
 
 @Component({
   selector: 'app-canvas',

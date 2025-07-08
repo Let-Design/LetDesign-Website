@@ -7,7 +7,7 @@ export interface UserProfile {
 }
 
 export interface LoginInput {
-  email: string;
+  username: string;
   password: string;
 }
 

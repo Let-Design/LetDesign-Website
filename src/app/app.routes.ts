@@ -6,6 +6,8 @@ import { RegisterComponent } from './features/auth/register/register.component';
 import { HomeComponent } from './features/home/home.component';
 import { authGuard } from './core/auth/auth.guard';
 import { PageNotFoundComponent } from './shared/ui/page-not-found/page-not-found.component';
+import { ForgetPasswordComponent } from './features/auth/forget-password/forget-password.component';
+import { VerifyEmailComponent } from './features/auth/verify-email/verify-email.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -17,6 +19,8 @@ export const routes: Routes = [
     children: [
       { path: 'login', component: LoginComponent },
       { path: 'register', component: RegisterComponent },
+      { path: 'forget-password', component: ForgetPasswordComponent },
+      { path: 'verify-email', component: VerifyEmailComponent },
     ],
   },
   { path: '**', component: PageNotFoundComponent },

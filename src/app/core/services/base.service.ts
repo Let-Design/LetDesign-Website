@@ -6,7 +6,7 @@ import { catchError, Observable, throwError } from 'rxjs';
   providedIn: 'root',
 })
 export class BaseService {
-  protected BACKEND_URL = 'http://localhost:4200/api';
+  protected BACKEND_URL = 'http://localhost:8080/api';
   constructor(protected http: HttpClient) {}
 
   protected get<T>(endpoint: string, headers?: HttpHeaders): Observable<T> {
@@ -41,8 +41,11 @@ export class BaseService {
       .pipe(catchError(this.handleError));
   }
 
-  protected handleError(error: any) {
-    console.error(`API Error: ${error}`);
-    return throwError(() => new Error(error.message || 'Something went wrong'));
+  protected handleError(res: any) {
+    // Best Options is to have a logger
+    console.error('API Error: ', res);
+    return throwError(
+      () => new Error(res.error.message || 'Something went wrong')
+    );
   }
 }

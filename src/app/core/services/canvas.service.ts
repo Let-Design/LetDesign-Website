@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 import { FabricObject } from 'fabric';
-import { SelectedObjectProperty } from '../../types/editor.types';
+import { SelectedObjectProperty } from '@models/editor.types';
 
 @Injectable({
   providedIn: 'root',

@@ -5,7 +5,7 @@ import {
   RectangleProperty,
   SelectedObjectProperty,
   TextProperty,
-} from '../types/editor.types';
+} from '../../types/editor.types';
 
 declare module 'fabric' {
   interface FabricObject {

@@ -3,7 +3,6 @@ import {
   Component,
   computed,
   OnDestroy,
-  OnInit,
   signal,
   viewChild,
 } from '@angular/core';
@@ -17,16 +16,16 @@ import {
   saveCanvas,
   toggleDrawMode,
   updateSelectedObjProperties,
-} from '../../utils/fabricUtils';
+} from '@shared/utils/fabric-utils';
 import { TuiTabs } from '@taiga-ui/kit';
 import { CommonModule } from '@angular/common';
-import { SelectedObjectProperty } from '../../types/editor.types';
+import { SelectedObjectProperty } from '@models/editor.types';
 import {
   TUI_DEFAULT_INPUT_COLORS,
   TuiInputColorModule,
 } from '@taiga-ui/legacy';
 import { FormsModule } from '@angular/forms';
-import { CanvasService } from '../../core/services/canvas.service';
+import { CanvasService } from '@core/services/canvas.service';
 import { FabricObject } from 'fabric';
 
 @Component({
@@ -91,7 +90,8 @@ export class DesignComponent implements OnDestroy {
   saveCanvas() {
     const fabricCanvas = this.canvasRef();
     if (!fabricCanvas) return;
-    saveCanvas(fabricCanvas.canvas);
+    const content = saveCanvas(fabricCanvas.canvas);
+    console.log(content);
   }
 
   setActiveObj(obj: FabricObject) {

@@ -1,11 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, signal } from '@angular/core';
-import {
-  InitialProfile,
-  LoginInput,
-  RegisterInput,
-  UserProfile,
-} from '../../types/auth.types';
+import { InitialProfile, LoginInput, RegisterInput, UserProfile } from '@models/auth.types';
 import { AuthConfig, OAuthService } from 'angular-oauth2-oidc';
 import { BaseService } from './base.service';
 
@@ -46,21 +41,28 @@ export class AuthService extends BaseService {
           picture: profile['picture'],
         });
         this.isAuthenticated.set(true);
+      } else {
+        this.isAuthenticated.set(false);
+        localStorage.removeItem('auth');
       }
     });
   }
 
   login(input: LoginInput) {
-    return this.post(`${this.BACKEND_URL}/auth/login`, input);
+    return this.post('auth/login', input);
   }
 
   register(input: RegisterInput) {
-    return this.post(`${this.BACKEND_URL}/auth/register`, input);
+    return this.post('auth/register', input);
   }
 
   logout() {
-    return this.post(`${this.BACKEND_URL}/auth/logout`, '');
+    return this.post('auth/logout', '');
   }
+
+  forgetPassword() {}
+
+  verifyEmail() {}
 
   hasValidAccessToken() {
     return this.oAuthService.hasValidAccessToken();
