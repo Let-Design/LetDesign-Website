@@ -20,7 +20,7 @@ import {
   TuiPassword,
   tuiValidationErrorsProvider,
 } from '@taiga-ui/kit';
-import { AuthService } from '@core/services/auth.service';
+import { AuthService } from '@core/services/auth/auth.service';
 import { LoginInput } from '@models/auth.types';
 import { Subscription } from 'rxjs';
 import { tuiPure } from '@taiga-ui/cdk/utils/miscellaneous';

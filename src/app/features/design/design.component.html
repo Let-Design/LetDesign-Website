@@ -23,9 +23,9 @@
           iconStart="@tui.rectangle-horizontal"
           appearance="outline"
           size="m"
-          (click)="addRectangle()"
+          (click)="handleRectangleAdd()"
           tuiButton
-          [style]="'color: black;'"
+          [style.color]="'black'"
         >
           Rectangle
         </button>
@@ -33,9 +33,9 @@
           iconStart="@tui.circle"
           appearance="outline"
           size="m"
-          (click)="addCircle()"
+          (click)="handleCircleAdd()"
           tuiButton
-          [style]="'color: black;'"
+          [style.color]="'black'"
         >
           Circle
         </button>
@@ -43,9 +43,9 @@
           iconStart="@tui.type"
           appearance="outline"
           size="m"
-          (click)="addText()"
+          (click)="handleTextAdd()"
           tuiButton
-          [style]="'color: black;'"
+          [style.color]="'black'"
         >
           Text
         </button>
@@ -53,19 +53,26 @@
           iconStart="@tui.upload"
           appearance="outline"
           size="m"
-          (click)="addText()"
+          (click)="inputRef()?.nativeElement?.click()"
           tuiButton
-          [style]="'color: black;'"
+          [style.color]="'black'"
         >
           Upload
         </button>
+        <input
+          class="hidden"
+          type="file"
+          accept="image/*"
+          #fileUpload
+          (change)="onFileChanged($event)"
+        />
         <button
           [iconStart]="drawMode() ? '@tui.pencil-off' : '@tui.pencil'"
           appearance="outline"
           size="m"
           (click)="toggleDrawMode()"
           tuiButton
-          [style]="'color: black;'"
+          [style.color]="'black'"
         >
           {{ drawMode() ? "Cancel" : "Draw" }}
         </button>
@@ -75,7 +82,7 @@
           size="m"
           (click)="saveCanvas()"
           tuiButton
-          [style]="'color: black;'"
+          [style.color]="'black'"
         >
           Save
         </button>
@@ -98,9 +105,11 @@
     <!-- Properties -->
     <div class="p-4 flex flex-col">
       <p class="text-base border-b-2 pb-3 border-gray-300">Properties</p>
+      <!-- Below is for testing -->
       <p class="p-2">
         {{ selectedObjProps() | json }}
       </p>
+      <!-- Above is for testing -->
       @if (selectedObjProps()) {
       <div class="grid grid-cols-1 md:grid-cols-2 p-2 gap-4">
         <div class="grid gap-1">
@@ -112,7 +121,8 @@
               [invalid]="false"
               [(ngModel)]="selectedObjProps()!.x"
               (change)="handleInputChange($event)"
-              (blur)="handleOnBlur()"
+              (blur)="handlePropsUpdate()"
+              (keypress)="handleEnterPressed($event)"
               tuiTextfield
               type="number"
             />
@@ -127,7 +137,8 @@
               [invalid]="false"
               [(ngModel)]="selectedObjProps()!.y"
               (change)="handleInputChange($event)"
-              (blur)="handleOnBlur()"
+              (blur)="handlePropsUpdate()"
+              (keypress)="handleEnterPressed($event)"
               tuiTextfield
               type="number"
             />
@@ -142,7 +153,8 @@
               [invalid]="false"
               [(ngModel)]="selectedObjProps()!.width"
               (change)="handleInputChange($event)"
-              (blur)="handleOnBlur()"
+              (blur)="handlePropsUpdate()"
+              (keypress)="handleEnterPressed($event)"
               tuiTextfield
               type="number"
             />
@@ -157,7 +169,8 @@
               [invalid]="false"
               [(ngModel)]="selectedObjProps()!.height"
               (change)="handleInputChange($event)"
-              (blur)="handleOnBlur()"
+              (blur)="handlePropsUpdate()"
+              (keypress)="handleEnterPressed($event)"
               tuiTextfield
               type="number"
             />
@@ -172,20 +185,22 @@
               [invalid]="false"
               [(ngModel)]="selectedObjProps()!.angle"
               (change)="handleInputChange($event)"
-              (blur)="handleOnBlur()"
+              (blur)="handlePropsUpdate()"
+              (keypress)="handleEnterPressed($event)"
               tuiTextfield
               type="number"
             />
           </tui-textfield>
         </div>
         <div class="col-span-2">
-          <tui-input-color
+          <!-- <tui-input-color
             id="color"
             [colors]="palette"
+            (focusedChange)="handlePropsUpdate()"
             [(ngModel)]="selectedObjProps()!.fill"
           >
             Color
-          </tui-input-color>
+          </tui-input-color> -->
         </div>
       </div>
       } @else {

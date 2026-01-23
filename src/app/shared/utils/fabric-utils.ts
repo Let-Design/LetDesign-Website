@@ -144,6 +144,31 @@ export const addCircle = (
 };
 
 /**
+ * Add an image to the canvas
+ * @param canvas Reference to a canvas
+ * @param name Name of the file 
+ * @param options Image options
+ */
+export const addImage = (
+  canvas: fabric.Canvas,
+  imgObj: string,
+  name: string,
+  options?: fabric.TOptions<fabric.ImageProps>
+) => {
+  fabric.FabricImage.fromURL(imgObj).then((img) => {
+    img.scaleToWidth(400);
+    img.name = name;
+    if (options) {
+      img.set({ options: options });
+    }
+
+    canvas.add(img);
+    canvas.centerObject(img);
+    canvas.setActiveObject(img);
+  });
+}
+
+/**
  * Add a custom text to the canvas
  * @param canvas Reference to a canvas
  * @param text String text

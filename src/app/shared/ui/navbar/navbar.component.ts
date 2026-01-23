@@ -12,8 +12,8 @@ import {
   TuiFallbackSrcPipe,
   TuiIcon,
 } from '@taiga-ui/core';
-import { ThemeService } from '@core/services/theme.service';
-import { AuthService } from '@core/services/auth.service';
+import { ThemeService } from '@core/services/theme/theme.service';
+import { AuthService } from '@core/services/auth/auth.service';
 import { TuiAvatar, TuiAvatarOutline } from '@taiga-ui/kit';
 import { TuiActiveZone } from '@taiga-ui/cdk/directives/active-zone';
 import { TuiObscured } from '@taiga-ui/cdk/directives/obscured';

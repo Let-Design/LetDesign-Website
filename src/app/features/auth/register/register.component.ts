@@ -19,7 +19,7 @@ import {
   TuiPassword,
   tuiValidationErrorsProvider,
 } from '@taiga-ui/kit';
-import { AuthService } from '@core/services/auth.service';
+import { AuthService } from '@core/services/auth/auth.service';
 import { RegisterInput } from '@models/auth.types';
 import { AsyncPipe, NgIf } from '@angular/common';
 import { tuiPure } from '@taiga-ui/cdk/utils/miscellaneous';

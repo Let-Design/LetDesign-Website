@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { NavbarComponent } from './shared/ui/navbar/navbar.component';
-import { ThemeService } from './core/services/theme.service';
+import { ThemeService } from './core/services/theme/theme.service';
 import { TuiRoot } from '@taiga-ui/core';
 
 @Component({

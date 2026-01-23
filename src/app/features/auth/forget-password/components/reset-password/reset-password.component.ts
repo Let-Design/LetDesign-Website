@@ -7,7 +7,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AuthService } from '@core/services/auth.service';
+import { AuthService } from '@core/services/auth/auth.service';
 import { tuiPure } from '@taiga-ui/cdk/utils/miscellaneous';
 import {
   TuiTextfield,

@@ -30,12 +30,11 @@
                       id="username"
                       tuiTextfield
                       formControlName="username"
-                      autocomplete="email"
-                      type="email"
+                      type="text"
                     />
                   </tui-textfield>
                   <tui-error
-                    formControlName="email"
+                    formControlName="username"
                     [error]="[] | tuiFieldError | async"
                   />
                 </label>
