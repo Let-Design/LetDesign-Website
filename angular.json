@@ -24,11 +24,13 @@
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "assets": [
-              "src/favicon.ico",
-              "src/assets",
               {
                 "glob": "**/*",
                 "input": "public"
+              },
+              {
+                "glob": "**/*",
+                "input": "src/assets"
               },
               {
                 "glob": "**/*",
@@ -37,13 +39,10 @@
               }
             ],
             "styles": [
-              "@taiga-ui/core/styles/taiga-ui-theme.less",
-              "@taiga-ui/core/styles/taiga-ui-fonts.less",
+              "node_modules/@taiga-ui/core/styles/taiga-ui-theme.less",
+              "node_modules/@taiga-ui/core/styles/taiga-ui-fonts.less",
               "src/styles.scss"
             ],
-            "stylePreprocessorOptions": {
-              "includePaths": ["src"]
-            },
             "scripts": []
           },
           "configurations": {
@@ -92,17 +91,16 @@
             "tsConfig": "tsconfig.spec.json",
             "inlineStyleLanguage": "scss",
             "assets": [
-              "src/favicon.ico",
-              "src/assets",
               {
                 "glob": "**/*",
                 "input": "public"
+              },
+              {
+                "glob": "**/*",
+                "input": "src/assets"
               }
             ],
             "styles": ["src/styles.scss"],
-            "stylePreprocessorOptions": {
-              "includePaths": ["src"]
-            },
             "scripts": []
           }
         }
