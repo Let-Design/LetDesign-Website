@@ -1,0 +1,73 @@
+<nav
+  class="flex text-base sticky z-[1] top-0 shadow-md bg-white dark:bg-slate-950 dark:border-b-2 dark:border-gray-800 dark:shadow items-center justify-between py-3 px-6"
+>
+  <div class="flex gap-6 items-center">
+    <a class="mr-2" routerLink="/">
+      <img
+        class="w-10 h-10 rounded-md"
+        [src]="
+          themeService.isLight()
+            ? 'assets/brands/logo_small.png'
+            : 'assets/brands/logo_white.png'
+        "
+        alt="logo"
+      />
+    </a>
+    <a class="hover:underline dark:text-white" routerLink="/design">Design</a>
+    <a class="hover:underline dark:text-white" routerLink="/about">About</a>
+  </div>
+
+  <div class="flex gap-4 items-center">
+    <button
+      class="hover:cursor-pointer mr-2"
+      (click)="themeService.toggleTheme()"
+    >
+      <tui-icon
+        [icon]="themeService.isLight() ? '@tui.moon' : '@tui.sun'"
+        [style.color]="themeService.isLight() ? 'black' : 'white'"
+      />
+    </button>
+    @if (isAuthenticated()) {
+    <tui-avatar
+      size="m"
+      class="hover:cursor-pointer"
+      [src]="userProfile().picture | tuiFallbackSrc : '@tui.user' | async"
+      tuiAvatarOutline="gray/90"
+      [tuiDropdown]="dropdownContent"
+      [tuiDropdownManual]="open"
+      [tuiObscuredEnabled]="open"
+      (tuiActiveZoneChange)="onActiveZone($event)"
+      (tuiObscured)="onObscured($event)"
+      (click)="onClick()"
+    >
+      <ng-template #dropdownContent>
+        <div class="flex flex-col gap-2 p-4">
+          <p>{{ "Name: " + userProfile().name }}</p>
+          <button
+            (click)="logout()"
+            class="mt-2"
+            tuiButton
+            size="s"
+            [style]="'background: #181818'"
+          >
+            Sign out
+          </button>
+        </div>
+      </ng-template>
+    </tui-avatar>
+    } @else {
+    <button
+      class="text-black bg-white ring ring-gray-300 px-4 py-1 rounded-sm hover:bg-gray-100/90 hover:cursor-pointer"
+      routerLink="/auth/login"
+    >
+      Login
+    </button>
+    <button
+      class="text-white bg-pitchdark px-4 py-1 rounded-sm hover:bg-pitchdark/90 dark:hover:bg-gray-800/90 hover:cursor-pointer"
+      routerLink="/auth/register"
+    >
+      Join Us
+    </button>
+    }
+  </div>
+</nav>
