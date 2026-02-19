@@ -1,50 +1,31 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
-import {
-  FormGroup,
-  FormControl,
-  Validators,
-  ReactiveFormsModule,
-} from '@angular/forms';
-import {
-  TuiDurationOptions,
-  TuiError,
-  TuiIcon,
-  TuiLoader,
-  tuiScaleIn,
-  TuiTextfield,
-} from '@taiga-ui/core';
-import { TuiInputModule, TuiTextfieldControllerModule } from '@taiga-ui/legacy';
-import {
-  TuiFieldErrorPipe,
-  TuiPassword,
-  tuiValidationErrorsProvider,
-} from '@taiga-ui/kit';
+import { FormGroup, FormControl, Validators, ReactiveFormsModule } from '@angular/forms';
+import { TuiError, TuiIcon, TuiLoader, TuiTextfield } from '@taiga-ui/core';
+import { TuiFieldErrorPipe, TuiPassword, tuiValidationErrorsProvider } from '@taiga-ui/kit';
 import { AuthService } from '@core/services/auth/auth.service';
 import { RegisterInput } from '@models/auth.types';
-import { AsyncPipe, NgIf } from '@angular/common';
-import { tuiPure } from '@taiga-ui/cdk/utils/miscellaneous';
+import { AsyncPipe } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { ErrorMessages } from '@shared/utils/error-messages';
+import { TuiAnimated } from "@taiga-ui/cdk/directives/animated";
 
 @Component({
   selector: 'app-register',
   imports: [
-    NgIf,
     AsyncPipe,
     ReactiveFormsModule,
-    TuiTextfield,
-    TuiInputModule,
     TuiIcon,
     TuiLoader,
     TuiPassword,
-    TuiTextfieldControllerModule,
+    TuiTextfield,
     TuiError,
+    TuiAnimated,
     TuiFieldErrorPipe,
+    TuiAnimated
   ],
   templateUrl: './register.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [tuiValidationErrorsProvider(ErrorMessages)],
-  animations: [tuiScaleIn],
 })
 export class RegisterComponent implements OnDestroy {
   apiError: string | null = null;
@@ -95,10 +76,5 @@ export class RegisterComponent implements OnDestroy {
 
   signupWithGoogle() {
     this.authService.loginWithGoogle();
-  }
-
-  @tuiPure
-  protected getAnimation(duration: number): TuiDurationOptions {
-    return { value: '', params: { duration } };
   }
 }

@@ -1,38 +1,24 @@
-import { NgIf, AsyncPipe } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { Component } from '@angular/core';
-import {
-  ReactiveFormsModule,
-  FormGroup,
-  FormControl,
-  Validators,
-} from '@angular/forms';
+import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '@core/services/auth/auth.service';
-import { tuiPure } from '@taiga-ui/cdk/utils/miscellaneous';
-import {
-  TuiTextfield,
-  TuiLoader,
-  TuiError,
-  TuiDurationOptions,
-  TuiIcon,
-} from '@taiga-ui/core';
+import { TuiAnimated } from '@taiga-ui/cdk/directives/animated';
+import { TuiTextfield, TuiLoader, TuiError, TuiIcon } from '@taiga-ui/core';
 import { TuiStepper, TuiFieldErrorPipe, TuiPassword } from '@taiga-ui/kit';
-import { TuiInputModule, TuiTextfieldControllerModule } from '@taiga-ui/legacy';
 import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-reset-password',
   imports: [
-    NgIf,
     AsyncPipe,
     ReactiveFormsModule,
     TuiTextfield,
     TuiStepper,
-    TuiInputModule,
     TuiPassword,
     TuiLoader,
+    TuiAnimated,
     TuiIcon,
-    TuiTextfieldControllerModule,
     TuiError,
     TuiFieldErrorPipe,
   ],
@@ -73,10 +59,5 @@ export class ResetPasswordComponent {
     this.loading = true;
 
     this.authService.forgetPassword();
-  }
-
-  @tuiPure
-  protected getAnimation(duration: number): TuiDurationOptions {
-    return { value: '', params: { duration } };
   }
 }

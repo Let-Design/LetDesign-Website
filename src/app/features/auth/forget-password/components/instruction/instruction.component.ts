@@ -1,34 +1,21 @@
-import { NgIf, AsyncPipe } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { Component } from '@angular/core';
-import {
-  ReactiveFormsModule,
-  FormGroup,
-  FormControl,
-  Validators,
-} from '@angular/forms';
+import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { AuthService } from '@core/services/auth/auth.service';
-import { tuiPure } from '@taiga-ui/cdk/utils/miscellaneous';
-import {
-  TuiTextfield,
-  TuiLoader,
-  TuiError,
-  TuiDurationOptions,
-} from '@taiga-ui/core';
+import { TuiAnimated } from '@taiga-ui/cdk/directives/animated';
+import { TuiTextfield, TuiLoader, TuiError } from '@taiga-ui/core';
 import { TuiStepper, TuiFieldErrorPipe } from '@taiga-ui/kit';
-import { TuiInputModule, TuiTextfieldControllerModule } from '@taiga-ui/legacy';
 import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-instruction',
   imports: [
-    NgIf,
     AsyncPipe,
     ReactiveFormsModule,
     TuiTextfield,
+    TuiAnimated,
     TuiStepper,
-    TuiInputModule,
     TuiLoader,
-    TuiTextfieldControllerModule,
     TuiError,
     TuiFieldErrorPipe,
   ],
@@ -62,10 +49,5 @@ export class InstructionComponent {
     this.loading = true;
 
     this.authService.forgetPassword();
-  }
-
-  @tuiPure
-  protected getAnimation(duration: number): TuiDurationOptions {
-    return { value: '', params: { duration } };
   }
 }

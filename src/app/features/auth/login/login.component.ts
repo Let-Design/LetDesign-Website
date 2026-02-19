@@ -1,52 +1,32 @@
-import { AsyncPipe, NgIf } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
-import {
-  FormControl,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
-import {
-  TuiDurationOptions,
-  TuiError,
-  TuiIcon,
-  TuiLoader,
-  tuiScaleIn,
-  TuiTextfield,
-} from '@taiga-ui/core';
-import { TuiInputModule, TuiTextfieldControllerModule } from '@taiga-ui/legacy';
-import {
-  TuiFieldErrorPipe,
-  TuiPassword,
-  tuiValidationErrorsProvider,
-} from '@taiga-ui/kit';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { TuiError, TuiIcon, TuiLoader, TuiTextfield } from '@taiga-ui/core';
+import { TuiFieldErrorPipe, TuiPassword, tuiValidationErrorsProvider } from '@taiga-ui/kit';
 import { AuthService } from '@core/services/auth/auth.service';
 import { LoginInput } from '@models/auth.types';
 import { Subscription } from 'rxjs';
-import { tuiPure } from '@taiga-ui/cdk/utils/miscellaneous';
 import { ErrorMessages } from '@shared/utils/error-messages';
 import { RouterLink } from '@angular/router';
+import { TuiAnimated } from '@taiga-ui/cdk/directives/animated';
 
 @Component({
   selector: 'app-login',
   imports: [
-    NgIf,
     RouterLink,
     AsyncPipe,
     ReactiveFormsModule,
     TuiTextfield,
-    TuiInputModule,
     TuiIcon,
     TuiLoader,
+    TuiAnimated,
     TuiPassword,
-    TuiTextfieldControllerModule,
     TuiError,
     TuiFieldErrorPipe,
   ],
   templateUrl: './login.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [tuiValidationErrorsProvider(ErrorMessages)],
-  animations: [tuiScaleIn],
 })
 export class LoginComponent implements OnDestroy {
   apiError: string | null = null;
@@ -96,10 +76,5 @@ export class LoginComponent implements OnDestroy {
 
   loginWithGoogle() {
     this.authService.loginWithGoogle();
-  }
-
-  @tuiPure
-  protected getAnimation(duration: number): TuiDurationOptions {
-    return { value: '', params: { duration } };
   }
 }

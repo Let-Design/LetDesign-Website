@@ -15,13 +15,14 @@
                   Register a new Let-Design account
                 </p>
               </div>
-              <div
-                *ngIf="apiError"
-                [@tuiScaleIn]="getAnimation(500)"
-                class="p-[14px] rounded-lg text-white bg-red-500"
-              >
-                {{ apiError }}
-              </div>
+              @if (apiError) {
+                <div
+                  class="p-[14px] rounded-lg text-white bg-red-500"
+                  tuiAnimated
+                >
+                  {{ apiError }}
+                </div>
+              }
               <div class="grid gap-2">
                 <label tuiLabel>
                   <p class="text-sm font-medium">Username</p>
