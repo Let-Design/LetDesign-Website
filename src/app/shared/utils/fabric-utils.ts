@@ -6,21 +6,24 @@ import {
   SelectedObjectProperty,
   TextProperty,
 } from '../../types/editor.types';
+import { ClosestPoint, PrintAreaId, PrintAreaState } from '@models/design.types';
 
 declare module 'fabric' {
   interface FabricObject {
     id?: number;
     name?: string;
+    printAreaId?: string;
   }
 
   interface SerializedObjectProps {
     id?: number;
     name?: string;
+    printAreaId?: string;
   }
 }
-fabric.FabricObject.customProperties = ['id', 'name'];
+fabric.FabricObject.customProperties = ['id', 'name', 'printAreaId'];
 
-const snapZone = 15;
+const snapZone = 10;
 
 /**
  * Initialize a Fabric canvas
@@ -35,19 +38,33 @@ export const initializeCanvas = (canvas: HTMLCanvasElement): fabric.Canvas => {
  * Initialize the canvas to a custom image shape
  * @param canvas Reference to a canvas
  * @param canvasImg Image that is use as background
+ * @param templateName Optional: Name for the template that is use as background
  */
 export const initializeImgCanvas = (
   canvas: fabric.Canvas,
-  canvasImg: string
+  canvasImg: string,
+  templateName?: string,
 ) => {
   canvas.controlsAboveOverlay = true;
 
+  // If template exist reload it back
+  const existingTemplate = canvas.getObjects().find(obj =>
+    obj.name === (templateName ? `canvasTemplate:${templateName}` : 'canvasTemplate')) as fabric.FabricImage | undefined;
+  if (existingTemplate) {
+    canvas.clipPath = existingTemplate;
+    canvas.sendObjectToBack(existingTemplate);
+    canvas.requestRenderAll();
+    return;
+  }
+
+  // If not then attach the template to the canvas
   fabric.FabricImage.fromURL(canvasImg).then((img) => {
-    img.scaleToWidth(700);
+    img.scaleToWidth(600);
     img.set({
-      name: 'canvasTemplate',
+      name: templateName ? `canvasTemplate:${templateName}` : 'canvasTemplate',
       selectable: false,
       evented: false,
+      // excludeFromExport: true,
     });
 
     canvas.add(img);
@@ -59,15 +76,46 @@ export const initializeImgCanvas = (
 };
 
 /**
+ * Initialize the canvas to a custom image shape
+ * @param canvas Reference to a canvas
+ * @param canvasImg Image that is use as background
+ * @param props Optional: Position properties for the template [left, top, angle, scale]
+ * @param templateName Optional: Name for the template that is use as background
+ */
+export const initializeGroupClipPath = async (
+  canvas: fabric.Canvas,
+  canvasImg: string,
+  props?: TemplatePosition,
+  templateName?: string,
+) => {
+  const img = await fabric.FabricImage.fromURL(canvasImg);
+  img.scaleToWidth(props?.scale ?? 250);
+  img.set({
+    name: templateName ? `canvasTemplate:${templateName}` : 'canvasTemplate',
+    left: props?.left,
+    top: props?.top,
+    selectable: false,
+    lockMovementX: true,
+    lockMovementY: true,
+    absolutePositioned: false,
+  });
+  canvas.add(img);
+  canvas.sendObjectToBack(img);
+
+  return img;
+};
+
+/**
  * Create a horizontal line in the middle of the canvas
  * @param canvas Reference to a canvas
  * @returns Line object
  */
-export const initializeHorizontalLine = (canvas: fabric.Canvas) => {
-  return new fabric.Line(
-    [(canvas.width ?? 0) / 2, 0, (canvas.width ?? 0) / 2, canvas.width ?? 0],
+export const initializeHorizontalLine = (canvas: fabric.Canvas | fabric.Group) => {
+  return new fabric.Polyline(
+    [{ x: 0, y: 0 }, { x: canvas.width / 2, y: 0 }],
     {
       stroke: 'red',
+      strokeDashArray: [5, 5],
       evented: false,
       selectable: false,
     }
@@ -79,11 +127,12 @@ export const initializeHorizontalLine = (canvas: fabric.Canvas) => {
  * @param canvas Reference to a canvas
  * @returns Line object
  */
-export const initializeVerticalLine = (canvas: fabric.Canvas) => {
-  return new fabric.Line(
-    [0, (canvas.height ?? 0) / 2, canvas.width ?? 0, (canvas.height ?? 0) / 2],
+export const initializeVerticalLine = (canvas: fabric.Canvas | fabric.Group) => {
+  return new fabric.Polyline(
+    [{ x: 0, y: 0 }, { x: 0, y: canvas.width / 2 }],
     {
       stroke: 'red',
+      strokeDashArray: [5, 5],
       evented: false,
       selectable: false,
     }
@@ -93,10 +142,12 @@ export const initializeVerticalLine = (canvas: fabric.Canvas) => {
 /**
  * Add a rectangle to the canvas
  * @param canvas Reference to a canvas
+ * @param areaState Reference to the active area properties 
  * @param options Rectangle options
  */
 export const addRectangle = (
   canvas: fabric.Canvas,
+  areaState?: PrintAreaState,
   options?: fabric.TOptions<fabric.RectProps>
 ) => {
   let rect: fabric.Rect;
@@ -109,22 +160,32 @@ export const addRectangle = (
     rect = new fabric.Rect({
       width: 100,
       height: 50,
-      fill: '#000000',
+      fill: '#000000ff',
+    });
+  }
+
+  const template = areaState?.template;
+  if (template) {
+    rect.set({
+      left: ((template.getScaledWidth() - rect.getScaledWidth()) / 2) + template.left,
+      top: ((template.getScaledHeight() - rect.getScaledHeight()) / 2) + template.top,
+      printAreaId: template.name,
     });
   }
 
   canvas.add(rect);
-  canvas.centerObject(rect);
   canvas.setActiveObject(rect);
 };
 
 /**
  * Add a circle to the canvas
  * @param canvas Reference to a canvas
+ * @param areaState Reference to the active area properties 
  * @param options Circle options
  */
 export const addCircle = (
   canvas: fabric.Canvas,
+  areaState?: PrintAreaState,
   options?: fabric.TOptions<fabric.CircleProps>
 ) => {
   let circle: fabric.Circle;
@@ -133,26 +194,37 @@ export const addCircle = (
     circle = new fabric.Circle(options);
   } else {
     circle = new fabric.Circle({
-      fill: '#000000',
+      fill: '#000000ff',
       radius: 30,
     });
   }
 
+  const template = areaState?.template;
+  if (template) {
+    circle.set({
+      left: ((template.getScaledWidth() - circle.getScaledWidth()) / 2) + template.left,
+      top: ((template.getScaledHeight() - circle.getScaledHeight()) / 2) + template.top,
+      printAreaId: template.name,
+    });
+  }
+
   canvas.add(circle);
-  canvas.centerObject(circle);
   canvas.setActiveObject(circle);
 };
 
 /**
  * Add an image to the canvas
  * @param canvas Reference to a canvas
+ * @param imgObj Reference to the image file
  * @param name Name of the file 
+ * @param areaState Reference to the active area properties 
  * @param options Image options
  */
 export const addImage = (
   canvas: fabric.Canvas,
   imgObj: string,
   name: string,
+  areaState?: PrintAreaState,
   options?: fabric.TOptions<fabric.ImageProps>
 ) => {
   fabric.FabricImage.fromURL(imgObj).then((img) => {
@@ -162,8 +234,16 @@ export const addImage = (
       img.set({ options: options });
     }
 
+    const template = areaState?.template;
+    if (template) {
+      img.set({
+        left: ((template.getScaledWidth() - img.getScaledWidth()) / 2) + template.left,
+        top: ((template.getScaledHeight() - img.getScaledHeight()) / 2) + template.top,
+        printAreaId: template.name,
+      });
+    }
+
     canvas.add(img);
-    canvas.centerObject(img);
     canvas.setActiveObject(img);
   });
 }
@@ -171,11 +251,13 @@ export const addImage = (
 /**
  * Add a custom text to the canvas
  * @param canvas Reference to a canvas
+ * @param areaState Reference to the active area properties 
  * @param text String text
  * @param options Text options
  */
 export const addText = (
   canvas: fabric.Canvas,
+  areaState?: PrintAreaState,
   text?: string,
   options?: fabric.TOptions<fabric.ITextProps>
 ) => {
@@ -184,10 +266,19 @@ export const addText = (
   if (text || options) {
     fabricText = new fabric.IText(text ?? 'Text', options);
   } else {
-    fabricText = new fabric.IText('Text', { fill: '#000000' });
+    fabricText = new fabric.IText('Text', { fill: '#000000ff' });
   }
+
+  const template = areaState?.template;
+  if (template) {
+    fabricText.set({
+      left: ((template.getScaledWidth() - fabricText.getScaledWidth()) / 2) + template.left,
+      top: ((template.getScaledHeight() - fabricText.getScaledHeight()) / 2) + template.top,
+      printAreaId: template.name,
+    });
+  }
+
   canvas.add(fabricText);
-  canvas.centerObject(fabricText);
   canvas.setActiveObject(fabricText);
 };
 
@@ -256,7 +347,7 @@ export const getSelectedObjProperties = (canvas: fabric.Canvas): SelectedObjectP
     } as TextProperty;
   } else if (
     selectedObj.isType('image') &&
-    selectedObj.name !== 'canvasTemplate'
+    selectedObj.name !== "canvasTemplate:front" && selectedObj.name !== "canvasTemplate:back"
   ) {
     selectedObjProperties = { ...commonProp, scaleX: 0.2, scaleY: 0.2 };
   }
@@ -315,7 +406,7 @@ export const updateSelectedObjProperties = (
       });
     } else if (
       activeObject?.type === 'image' &&
-      activeObject?.name !== 'canvasTemplate'
+      activeObject.name !== "canvasTemplate:front" && activeObject.name !== "canvasTemplate:back"
     ) {
       (activeObject as fabric.Image).set({
         ...commonProp,
@@ -468,67 +559,135 @@ export const updateSelectedObjProperties = (
  * Function to enable snapping to middle point for both horizontally and vertically
  * @param options Reference to the selected object
  * @param canvas Reference to a canvas
- * @param horizontalLine Reference to the horizontal line
- * @param verticalLine Reference to the vertical line
+ * @param templates Reference to the product templates 
  */
 export const handleObjectSnap = (
   options: fabric.BasicTransformEvent<fabric.TPointerEvent> & {
     target: fabric.FabricObject;
   },
-  canvas: fabric.Canvas,
-  horizontalLine: fabric.Line,
-  verticalLine: fabric.Line
+  canvas: fabric.Canvas | fabric.Group,
+  templates: Map<PrintAreaId, PrintAreaState>,
+  horizontalLine: fabric.Polyline,
+  verticalLine: fabric.Polyline,
 ) => {
-  const objectMiddleHorizontal =
-    (options.target.left ?? 0) +
-    ((options.target.width ?? 0) * (options.target.scaleX ?? 1)) / 2;
+  const target = options.target;
+  const objectCenter = target.getCenterPoint();
 
-  if (
-    objectMiddleHorizontal > (canvas.width ?? 0) / 2 - snapZone &&
-    objectMiddleHorizontal < (canvas.width ?? 0) / 2 + snapZone
-  ) {
-    options.target
-      ?.set({
-        left:
-          (canvas.width ?? 0) / 2 -
-          ((options.target.width ?? 0) * (options.target.scaleX ?? 0)) / 2,
-      })
-      .setCoords();
+  let closest: ClosestPoint | null = null;
+  let minDistance = Infinity;
 
-    canvas.add(horizontalLine);
+  // Get the center point of all templates and find the closest template
+  for (const [id, area] of templates) {
+    const center = area.template.getCenterPoint();
+    const dx = objectCenter.x - center.x;
+    const dy = objectCenter.y - center.y;
+    const distance = dx * dx + dy * dy;
 
-    document.addEventListener('mouseup', () => {
-      canvas.remove(horizontalLine);
-    });
-  } else {
-    canvas.remove(horizontalLine);
+    if (distance < minDistance) {
+      minDistance = distance;
+      closest = { id, center, template: area.template };
+
+      if (target.printAreaId !== closest.template.name) {
+        target.printAreaId = closest.template.name;
+      }
+    }
   }
 
-  const objectMiddleVertical =
-    (options.target?.top ?? 0) +
-    ((options.target?.height ?? 0) * (options.target?.scaleY ?? 1)) / 2;
+  if (!closest) return;
+  let newX = objectCenter.x;
+  let newY = objectCenter.y;
 
-  if (
-    objectMiddleVertical > (canvas.height ?? 0) / 2 - snapZone &&
-    objectMiddleVertical < (canvas.height ?? 0) / 2 + snapZone
-  ) {
-    options.target
-      ?.set({
-        top:
-          (canvas.height ?? 0) / 2 -
-          ((options.target.height ?? 0) * (options.target.scaleY ?? 0)) / 2,
-      })
-      .setCoords();
+  let snappedX = false;
+  let snappedY = false;
 
-    canvas.add(verticalLine);
+  // Calculate horizontal snap
+  if (Math.abs(objectCenter.x - closest.center.x) < snapZone) {
+    newX = closest.center.x;
+    snappedX = true;
+  }
 
-    document.addEventListener('mouseup', () => {
-      canvas.remove(verticalLine);
+  // Calculate vertical snap
+  if (Math.abs(objectCenter.y - closest.center.y) < snapZone) {
+    newY = closest.center.y;
+    snappedY = true;
+  }
+
+  // Apply object movement
+  if (snappedX || snappedY) {
+    target.setPositionByOrigin(
+      new fabric.Point(newX, newY),
+      'center',
+      'center',
+    );
+    target.setCoords();
+  }
+
+  // Append vertical line
+  if (snappedX) {
+    verticalLine.set({
+      points: [
+        { x: 0, y: -closest.template.getScaledHeight() },
+        { x: 0, y: closest.template.getScaledHeight() },
+      ],
     });
+
+    verticalLine.setPositionByOrigin(
+      closest.center,
+      'center',
+      'center',
+    );
+
+    if (!canvas.getObjects().includes(verticalLine)) {
+      canvas.add(verticalLine);
+    }
   } else {
     canvas.remove(verticalLine);
   }
+
+  // Append horizontal line
+  if (snappedY) {
+    horizontalLine.set({
+      points: [
+        { x: -closest.template.getScaledWidth(), y: 0 },
+        { x: closest.template.getScaledWidth(), y: 0 },
+      ],
+    });
+
+    horizontalLine.setPositionByOrigin(
+      closest.center,
+      'center',
+      'center'
+    );
+
+    if (!canvas.getObjects().includes(horizontalLine)) {
+      canvas.add(horizontalLine);
+    }
+  } else {
+    canvas.remove(horizontalLine);
+  }
 };
+
+/**
+ * Bring the current selected object forward 
+ * @param canvas reference to a canvas
+ */
+export const bringObjectForward = (canvas: fabric.Canvas) => {
+  const activeObject = canvas.getActiveObject();
+  if (!activeObject) return;
+  canvas.bringObjectForward(activeObject);
+  canvas.requestRenderAll();
+}
+
+/**
+ * Send the current selected object backward 
+ * @param canvas reference to a canvas
+ */
+export const sendObjectBackward = (canvas: fabric.Canvas) => {
+  const activeObject = canvas.getActiveObject();
+  if (!activeObject) return;
+  canvas.sendObjectBackwards(activeObject);
+  canvas.requestRenderAll();
+}
 
 /**
  * Remove the current selected object from the canvas
@@ -537,7 +696,6 @@ export const handleObjectSnap = (
  */
 export const removeObject = (canvas: fabric.Canvas | null): void => {
   const activeObject = canvas?.getActiveObject();
-
   if (!canvas || !activeObject) return;
 
   // If text object is editing don't delete
@@ -567,13 +725,11 @@ let _clipboard: fabric.FabricObject;
  * @param canvas Reference to a canvas
  */
 export const copyObject = (canvas: fabric.Canvas) => {
-  if (canvas) {
-    const selectedObj = canvas.getActiveObject();
-    if (selectedObj) {
-      selectedObj.clone().then((cloned: fabric.FabricObject) => {
-        _clipboard = cloned;
-      });
-    }
+  const selectedObj = canvas.getActiveObject();
+  if (selectedObj) {
+    selectedObj.clone().then((cloned: fabric.FabricObject) => {
+      _clipboard = cloned;
+    });
   }
 };
 
@@ -582,7 +738,7 @@ export const copyObject = (canvas: fabric.Canvas) => {
  * @param canvas Reference to a canvas
  */
 export const pasteObject = async (canvas: fabric.Canvas) => {
-  if (canvas && _clipboard) {
+  if (_clipboard) {
     const clonedObj = await _clipboard.clone();
     canvas.discardActiveObject();
 
@@ -711,3 +867,10 @@ export const loadCanvas = (
 export const clearCanvas = (canvas: fabric.Canvas): void => {
   canvas.clear();
 };
+
+export interface TemplatePosition {
+  left: number,
+  top: number,
+  angle: number,
+  scale: number
+}

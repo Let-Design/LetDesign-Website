@@ -42,3 +42,7 @@ export type SelectedObjectProperty =
   | CircleProperty
   | TextProperty
   | null;
+
+export function isRectangleProps(props: SelectedObjectProperty): props is RectangleProperty {
+  return !!props && 'cornerRadius' in props;
+}

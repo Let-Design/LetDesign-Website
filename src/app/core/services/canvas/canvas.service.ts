@@ -1,6 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 import { FabricObject } from 'fabric';
 import { SelectedObjectProperty } from '@models/editor.types';
+import { PrintAreaId, PrintAreaState } from '@models/design.types';
 
 @Injectable({
   providedIn: 'root',
@@ -8,6 +9,7 @@ import { SelectedObjectProperty } from '@models/editor.types';
 export class CanvasService {
   objects = signal<FabricObject[]>([]);
   selectedObjProps = signal<SelectedObjectProperty | null>(null);
+  printAreas = signal<Map<PrintAreaId, PrintAreaState>>(new Map<PrintAreaId, PrintAreaState>());
 
   setObjects(newValue: FabricObject[]) {
     this.objects.set(newValue);

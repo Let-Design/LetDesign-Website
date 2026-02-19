@@ -1,32 +1,9 @@
-import {
-  AfterViewInit,
-  Component,
-  ElementRef,
-  OnDestroy,
-  signal,
-  viewChild,
-  ViewEncapsulation,
-} from '@angular/core';
-import {
-  BasicTransformEvent,
-  Canvas,
-  FabricImage,
-  FabricObject,
-  IText,
-  Line,
-  ModifiedEvent,
-  TPointerEvent,
-} from 'fabric';
-import {
-  copyObject,
-  getSelectedObjProperties,
-  handleObjectSnap,
-  initializeHorizontalLine,
-  initializeVerticalLine,
-  pasteObject,
-  removeObject,
-} from '@shared/utils/fabric-utils';
+import { AfterViewInit, Component, ElementRef, input, OnDestroy, signal, viewChild, ViewEncapsulation } from '@angular/core';
+import { BasicTransformEvent, Canvas, FabricObject, IText, ModifiedEvent, Polyline, TPointerEvent, TPointerEventInfo } from 'fabric';
+import { copyObject, getSelectedObjProperties, handleObjectSnap, initializeHorizontalLine, initializeVerticalLine, pasteObject, removeObject } from '@shared/utils/fabric-utils';
+import { PrintAreaId, PrintAreaState, ProductType } from '@models/design.types';
 import { CanvasService } from '@core/services/canvas/canvas.service';
+import { initializeTshirtAreas } from '../design-config/tshirt.config';
 
 @Component({
   selector: 'app-canvas',
@@ -34,22 +11,28 @@ import { CanvasService } from '@core/services/canvas/canvas.service';
   encapsulation: ViewEncapsulation.None,
 })
 export class CanvasComponent implements OnDestroy, AfterViewInit {
-  canvasRef = viewChild<ElementRef<HTMLCanvasElement>>('canvas');
   canvas!: Canvas;
-  horizontalLine!: Line;
-  verticalLine!: Line;
+  canvasRef = viewChild<ElementRef<HTMLCanvasElement>>('canvas');
+  productType = input.required<ProductType>();
+  horizontalLine!: Polyline;
+  verticalLine!: Polyline;
   rectCounter = signal(1);
   circleCounter = signal(1);
+  activeAreaId = signal<PrintAreaId>('front');
+  activeArea = signal<PrintAreaState | undefined>(undefined);
+  private resizeObserver?: ResizeObserver;
+  private resizeTimeout?: number;
 
   constructor(private canvasService: CanvasService) { }
 
-  ngAfterViewInit(): void {
+  async ngAfterViewInit() {
     this.canvas = new Canvas(this.canvasRef()?.nativeElement);
-    this.resizeCanvas();
+    await this.getPrintAreaConfig(this.productType());
+    this.activeArea.set(this.canvasService.printAreas().get(this.activeAreaId()));
     this.horizontalLine = initializeHorizontalLine(this.canvas);
     this.verticalLine = initializeVerticalLine(this.canvas);
 
-    window.addEventListener('resize', () => this.resizeCanvas());
+    this.resizeCanvas();
     window.addEventListener('keydown', (e) => this.handleKeyboardShortcut(e));
     this.canvas.on('selection:created', this.handleSelection);
     this.canvas.on('selection:updated', this.handleSelection);
@@ -62,15 +45,56 @@ export class CanvasComponent implements OnDestroy, AfterViewInit {
     this.canvas.on('object:skewing', this.handleSelection);
     this.canvas.on('object:resizing', this.handleSelection);
     this.canvas.on('object:moving', this.handleObjSnap);
+    this.canvasService.printAreas().forEach(area => area.template.on('mousedblclick', this.switchFunction));
+  }
+
+  async getPrintAreaConfig(productType: ProductType) {
+    switch (productType) {
+      case 'tshirt':
+        this.canvasService.printAreas.set(await initializeTshirtAreas(this.canvas));
+        break;
+      default:
+        this.canvasService.printAreas.set(await initializeTshirtAreas(this.canvas));
+        break;
+    }
+  }
+
+  switchFunction = (e: TPointerEventInfo<TPointerEvent> & {
+    alreadySelected: boolean;
+  }) => {
+    this.switchArea(e.target?.name as PrintAreaId);
+  }
+
+  switchArea(areaId: PrintAreaId) {
+    if (this.activeAreaId() === areaId) return;
+
+    this.activeAreaId.set(areaId);
+    this.activeArea.set(this.canvasService.printAreas().get(areaId.split(':')[1] as PrintAreaId));
+
+    this.canvas.discardActiveObject();
+    this.canvas.requestRenderAll();
   }
 
   resizeCanvas = () => {
     const parent = document.getElementById('canvas-container');
-    if (parent) {
-      this.canvas.setWidth(parent.clientWidth);
-      this.canvas.setHeight(parent.clientHeight);
-      this.canvas.requestRenderAll();
-    }
+    if (!parent) return;
+
+    this.resizeObserver = new ResizeObserver(entries => {
+      const { width, height } = entries[0].contentRect;
+      if (width === 0 || height === 0) return;
+      this.canvas.renderOnAddRemove = false;
+      this.canvas.selection = false;
+
+      window.clearTimeout(this.resizeTimeout);
+      this.resizeTimeout = window.setTimeout(() => {
+        this.canvas.setDimensions({ width: parent.clientWidth, height: parent.clientHeight }, { cssOnly: false })
+        this.canvas.renderOnAddRemove = true;
+        this.canvas.selection = true;
+        this.canvas.requestRenderAll();
+      }, 120);
+    });
+
+    this.resizeObserver.observe(parent);
   };
 
   handleKeyboardShortcut = (e: KeyboardEvent) => {
@@ -104,15 +128,11 @@ export class CanvasComponent implements OnDestroy, AfterViewInit {
   updateCanvasObjects = () => {
     const canvasObjects: FabricObject[] = [];
     this.canvas.getObjects().forEach((obj) => {
-      const imgObj = obj as FabricImage;
       if (
         obj.type === 'rect' ||
         obj.type === 'circle' ||
         obj.type === 'i-text' ||
-        (obj.type === 'image' &&
-          obj.name !== 'canvasTemplate' &&
-          !imgObj.getSrc().includes('shirtTemplateFront') &&
-          !imgObj.getSrc().includes('shirtTemplateBack'))
+        (obj.type === 'image' && !obj.name?.includes('canvasTemplate'))
       ) {
         canvasObjects.push(obj);
       }
@@ -126,6 +146,13 @@ export class CanvasComponent implements OnDestroy, AfterViewInit {
       obj.set('name', (obj as IText).text);
     }
     this.updateCanvasObjects();
+
+    if (this.canvas.getObjects().includes(this.horizontalLine)) {
+      this.canvas.remove(this.horizontalLine);
+    }
+    if (this.canvas.getObjects().includes(this.verticalLine)) {
+      this.canvas.remove(this.verticalLine);
+    }
   };
 
   handleSelection = () => {
@@ -133,13 +160,9 @@ export class CanvasComponent implements OnDestroy, AfterViewInit {
     this.canvasService.setObjectProps(properties);
   };
 
-  handleObjSnap = (
-    e: BasicTransformEvent<TPointerEvent> & {
-      target: FabricObject;
-    }
-  ) => {
+  handleObjSnap = (e: BasicTransformEvent<TPointerEvent> & { target: FabricObject }) => {
     this.handleSelection();
-    handleObjectSnap(e, this.canvas, this.horizontalLine, this.verticalLine);
+    handleObjectSnap(e, this.canvas, this.canvasService.printAreas(), this.horizontalLine, this.verticalLine);
   };
 
   handleSelectionClear = () => {
@@ -147,7 +170,7 @@ export class CanvasComponent implements OnDestroy, AfterViewInit {
   };
 
   ngOnDestroy(): void {
-    window.removeEventListener('resize', this.resizeCanvas);
+    this.resizeObserver?.disconnect();
     window.removeEventListener('keydown', this.handleKeyboardShortcut);
     this.canvas.off('selection:created', this.handleSelection);
     this.canvas.off('selection:updated', this.handleSelection);
@@ -160,6 +183,7 @@ export class CanvasComponent implements OnDestroy, AfterViewInit {
     this.canvas.off('object:skewing', this.handleSelection);
     this.canvas.off('object:resizing', this.handleSelection);
     this.canvas.off('object:moving', this.handleObjSnap);
+    this.canvasService.printAreas().forEach(area => area.template.off('mousedblclick', this.switchFunction));
 
     this.canvas.dispose();
   }
