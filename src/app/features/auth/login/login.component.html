@@ -1,5 +1,5 @@
 <div
-  class="flex min-h-[calc(100vh)-72px] flex-col items-center justify-center bg-muted p-6 md:p-10"
+  class="flex min-h-[calc(100vh-72px)] flex-col items-center justify-center bg-muted p-6 md:p-10"
 >
   <div class="w-full max-w-sm md:max-w-md">
     <div class="flex flex-col gap-6">
@@ -8,42 +8,47 @@
       >
         <div class="grid p-0 md:grid-cols-1">
           <form [formGroup]="form" (ngSubmit)="submit()" class="p-6 md:p-8">
-            <div class="flex flex-col gap-6">
+            <div class="flex flex-col gap-4">
               <div class="flex flex-col items-center text-center">
                 <h1 class="text-2xl font-bold">Welcome back</h1>
                 <p class="text-balance text-muted-foreground">
                   Login to your Let-Design account
                 </p>
               </div>
+              <div
+                *ngIf="apiError"
+                [@tuiScaleIn]="getAnimation(500)"
+                class="p-[14px] rounded-lg text-white bg-red-500"
+              >
+                {{ apiError }}
+              </div>
               <div class="grid gap-2">
-                <label
-                  class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  for="email"
-                  >Email</label
-                >
-                <tui-input
-                  formControlName="email"
-                  tuiTextfieldSize="m"
-                  [tuiTextfieldCleaner]="true"
-                  [tuiTextfieldLabelOutside]="true"
-                >
-                  {{ "example@example.com" }}
-                  <input
-                    id="email"
-                    autocomplete="email"
-                    tuiTextfieldLegacy
-                    type="email"
+                <label tuiLabel>
+                  <p class="text-sm font-medium">Username</p>
+                  <tui-textfield tuiTextfieldSize="m">
+                    <input
+                      id="username"
+                      tuiTextfield
+                      formControlName="username"
+                      type="text"
+                    />
+                  </tui-textfield>
+                  <tui-error
+                    formControlName="username"
+                    [error]="[] | tuiFieldError | async"
                   />
-                </tui-input>
+                </label>
               </div>
               <div class="grid gap-2">
                 <div class="flex items-center">
                   <label
                     class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                     for="password"
-                    >Password</label
-                  ><a
-                    href="#"
+                  >
+                    Password
+                  </label>
+                  <a
+                    routerLink="/auth/forget-password"
                     class="ml-auto text-sm underline-offset-2 hover:underline"
                     >Forgot your password?</a
                   >
@@ -57,23 +62,31 @@
                   />
                   <tui-icon tuiPassword />
                 </tui-textfield>
+                <tui-error
+                  formControlName="password"
+                  [error]="[] | tuiFieldError | async"
+                />
               </div>
-              <button
-                class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors hover:cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-pitchdark text-white shadow hover:bg-pitchdark/90 h-9 px-4 py-2 w-full"
-                type="submit"
-              >
-                Login
-              </button>
+              <tui-loader [overlay]="true" [showLoader]="loading">
+                <button
+                  [disabled]="form.invalid"
+                  class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors hover:cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-pitchdark text-white shadow hover:bg-pitchdark/90 h-9 px-4 py-2 w-full"
+                  type="submit"
+                >
+                  Login
+                </button>
+              </tui-loader>
               <div class="flex items-center gap-1">
                 <div class="h-[1px] w-full bg-black"></div>
                 <span
-                  class="w-[400px] z-10 bg-background px-2 text-muted-foreground"
+                  class="w-[300px] z-10 bg-background px-2 text-muted-foreground"
                   >Or continue with</span
                 >
                 <div class="h-[1px] w-full bg-black"></div>
               </div>
               <button
                 class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors hover:cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-gray-300 bg-background shadow-sm hover:bg-muted hover:text-accent-foreground h-9 px-4 py-2 w-full"
+                (click)="loginWithGoogle()"
               >
                 <svg
                   class="w-4 h-4"
@@ -88,7 +101,7 @@
               </button>
               <div class="text-center text-sm">
                 Don't have an account?
-                <a href="/register" class="underline underline-offset-4"
+                <a href="/auth/register" class="underline underline-offset-4"
                   >Sign up</a
                 >
               </div>

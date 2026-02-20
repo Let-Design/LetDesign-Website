@@ -1,10 +1,9 @@
 import { Component } from '@angular/core';
+import { FooterComponent } from '@shared/ui/footer/footer.component';
 
 @Component({
   selector: 'app-home',
-  imports: [],
+  imports: [FooterComponent],
   templateUrl: './home.component.html',
 })
-export class HomeComponent {
-
-}
+export class HomeComponent { }
