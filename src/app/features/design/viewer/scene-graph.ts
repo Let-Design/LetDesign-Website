@@ -1,4 +1,4 @@
-import { CUSTOM_ELEMENTS_SCHEMA, Component, ChangeDetectionStrategy, signal } from '@angular/core';
+import { CUSTOM_ELEMENTS_SCHEMA, Component, ChangeDetectionStrategy, signal, OnDestroy } from '@angular/core';
 import { injectStore, loaderResource, NgtArgs } from 'angular-three';
 import { Mesh, BoxGeometry, MeshBasicMaterial } from 'three';
 import { GLTFLoader, OrbitControls } from 'three-stdlib';
@@ -32,17 +32,34 @@ import { CanvasService } from '@core/services/canvas/canvas.service';
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SceneGraph {
+export class SceneGraph implements OnDestroy {
   protected readonly Math = Math;
-  model = loaderResource(() => GLTFLoader, () => "assets/t_shirt_mod.glb");
+  model = loaderResource(() => GLTFLoader, () => "t_shirt_mod.glb");
   ngtStore = injectStore();
   hovered = signal(false);
   camera = this.ngtStore.camera;
+  scene = this.ngtStore.scene;
   glDom = this.ngtStore.gl.domElement;
 
   constructor(private canvasService: CanvasService) {
     extend({ Mesh, BoxGeometry, MeshBasicMaterial, OrbitControls });
     console.log("Print areas in scene graph: ", this.canvasService.printAreas());
+  }
+
+  ngOnDestroy(): void {
+    this.scene().traverse((obj: any) => {
+      if (obj.geometry) obj.geometry.dispose();
+
+      if (obj.material) {
+        if (Array.isArray(obj.material)) {
+          obj.material.forEach((m: any) => m.dispose());
+        } else {
+          obj.material.dispose();
+        }
+      }
+    });
+
+    this.model.destroy();
   }
 
   setCursor(type: 'grab' | 'default' | 'grabbing') {
