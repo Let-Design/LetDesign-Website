@@ -25,9 +25,8 @@ import {
   initializeVerticalLine,
   pasteObject,
   removeObject,
-} from '../../../utils/fabricUtils';
-import { SelectedObjectProperty } from '../../../types/editor.types';
-import { CanvasService } from '../../../core/canvas/canvas.service';
+} from '@shared/utils/fabric-utils';
+import { CanvasService } from '@core/services/canvas/canvas.service';
 
 @Component({
   selector: 'app-canvas',
@@ -42,13 +41,13 @@ export class CanvasComponent implements OnDestroy, AfterViewInit {
   rectCounter = signal(1);
   circleCounter = signal(1);
 
-  constructor(private canvasService: CanvasService) {}
+  constructor(private canvasService: CanvasService) { }
 
   ngAfterViewInit(): void {
     this.canvas = new Canvas(this.canvasRef()?.nativeElement);
+    this.resizeCanvas();
     this.horizontalLine = initializeHorizontalLine(this.canvas);
     this.verticalLine = initializeVerticalLine(this.canvas);
-    this.resizeCanvas();
 
     window.addEventListener('resize', () => this.resizeCanvas());
     window.addEventListener('keydown', (e) => this.handleKeyboardShortcut(e));
@@ -95,6 +94,8 @@ export class CanvasComponent implements OnDestroy, AfterViewInit {
         this.circleCounter.update((value) => value + 1);
       } else if (obj.type === 'i-text') {
         obj.set('name', (obj as IText).text);
+      } else if (obj.type === 'image') {
+        obj.set('name', obj.name);
       }
       this.updateCanvasObjects();
     }
