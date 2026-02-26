@@ -52,6 +52,7 @@
     "@angular/compiler-cli": "^20.3.16",
     "@types/fabric": "^5.3.9",
     "@types/jasmine": "~5.1.0",
+    "@types/jest": "^30.0.0",
     "@types/three": "^0.182.0",
     "angular-three-plugin": "^4.0.9",
     "autoprefixer": "^10.4.23",
