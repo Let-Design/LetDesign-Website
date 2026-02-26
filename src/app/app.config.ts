@@ -5,9 +5,11 @@ import { routes } from './app.routes';
 import { provideHttpClient } from '@angular/common/http';
 import { provideOAuthClient } from 'angular-oauth2-oidc';
 import { provideNgtRenderer } from "angular-three/dom";
+import { provideEventPlugins } from '@taiga-ui/event-plugins';
 
 export const appConfig: ApplicationConfig = {
   providers: [
+    provideEventPlugins(),
     provideHttpClient(),
     provideOAuthClient(),
     provideZoneChangeDetection({ eventCoalescing: true }),

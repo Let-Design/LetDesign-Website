@@ -4,18 +4,19 @@ import { TuiButton, TuiIcon, TuiTextfield } from '@taiga-ui/core';
 import { addCircle, addImage, addRectangle, addText, bringObjectForward, getSelectedObjProperties, saveCanvas, sendObjectBackward, toggleDrawMode, updateSelectedObjProperties } from '@shared/utils/fabric-utils';
 import { TuiInputColor, tuiInputColorOptionsProvider, TuiTabs } from '@taiga-ui/kit';
 import { CommonModule } from '@angular/common';
-import { isRectangleProps, SelectedObjectProperty } from '@models/editor.types';
+import { isRectangleProps, isTextProps, SelectedObjectProperty, TextProperty } from '@models/editor.types';
 import { FormsModule } from '@angular/forms';
 import { CanvasService } from '@core/services/canvas/canvas.service';
 import { FabricObject, StaticCanvas } from 'fabric';
 import { PrintAreaId, ProductType } from '@models/design.types';
 import { ViewerComponent } from './viewer/viewer.component';
 import { CanvasTexture } from 'three';
+import { CustomSelectComponent } from '@shared/ui/custom-select/custom-select.component';
 
 @Component({
   selector: 'app-design',
   imports: [
-    CommonModule, FormsModule, CanvasComponent, ViewerComponent,
+    CommonModule, FormsModule, CanvasComponent, ViewerComponent, CustomSelectComponent,
     TuiTabs, TuiButton, TuiIcon, TuiInputColor, TuiTextfield
   ],
   templateUrl: './design.component.html',
@@ -29,6 +30,11 @@ export class DesignComponent implements OnDestroy {
   listCollapse = signal(false);
   activeAreaId = signal<PrintAreaId>('front');
   activeProductType: ProductType = 'tshirt';
+  fontFamilies: { label: string, id: string }[] = [
+    { label: 'Times New Roman', id: 'Times New Roman' },
+    { label: 'Space Mono', id: 'Space Mono' },
+    { label: 'Roboto', id: 'Roboto' },
+  ];
 
   objects = computed(() => this.canvasService.objects());
   selectedObjProps = computed(() => this.canvasService.selectedObjProps());
@@ -36,9 +42,17 @@ export class DesignComponent implements OnDestroy {
     const props = this.canvasService.selectedObjProps();
     return isRectangleProps(props) ? props : null;
   });
+  textProps = computed(() => {
+    const props = this.canvasService.selectedObjProps();
+    return isTextProps(props) ? props : null;
+  });
 
   constructor(private canvasService: CanvasService) {
     this.canvasService.objects.set([]);
+  }
+
+  async ngOnInit(): Promise<void> {
+    await this.preloadFonts(["Space Mono", "Roboto"]);
   }
 
   ngOnDestroy(): void {
@@ -207,6 +221,18 @@ export class DesignComponent implements OnDestroy {
     this.handlePropsUpdate();
   };
 
+  async onFontFamilySelection(id: string) {
+    // await document.fonts.ready;
+
+    this.canvasService.selectedObjProps.update((oldValue) => {
+      return {
+        ...oldValue,
+        fontFamily: id,
+      } as SelectedObjectProperty;
+    });
+    this.handlePropsUpdate();
+  }
+
   handlePropsUpdate() {
     const fabricCanvas = this.canvasRef();
     const selectedProps = this.selectedObjProps();
@@ -220,5 +246,13 @@ export class DesignComponent implements OnDestroy {
 
   handleEnterPressed(e: KeyboardEvent) {
     if (e.key === "Enter") this.handlePropsUpdate();
+  }
+
+  async preloadFonts(fonts: string[]) {
+    await Promise.all(
+      fonts.map(font => {
+        document.fonts.load(`16px "${font}"`);
+      })
+    );
   }
 }

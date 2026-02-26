@@ -9,7 +9,7 @@
     type="button"
     (blur)="onBlur()"
     (click)="isOpen.set(!isOpen())"
-    class="px-4 py-2.5 w-full flex font-bold items-center justify-between rounded-[8px] border border-gray-400 dark:border-gray-700 cursor-pointer text-slate-900 text-sm outline-none bg-white hover:bg-gray-50 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 focus:border-blue-600"
+    class="px-3 py-3 w-full shadow-md flex font-bold items-center justify-between rounded-[8px] border border-gray-200 dark:border-gray-700 cursor-pointer text-slate-900 text-sm outline-none bg-white hover:bg-gray-50 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 focus:border-blue-600"
   >
     {{ innerLabel() }} {{ selectedOption().label }}
     <tui-icon

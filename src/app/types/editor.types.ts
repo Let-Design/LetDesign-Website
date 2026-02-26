@@ -46,3 +46,7 @@ export type SelectedObjectProperty =
 export function isRectangleProps(props: SelectedObjectProperty): props is RectangleProperty {
   return !!props && 'cornerRadius' in props;
 }
+
+export function isTextProps(props: SelectedObjectProperty): props is TextProperty {
+  return !!props && 'fontFamily' in props;
+}

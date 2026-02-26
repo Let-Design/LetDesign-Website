@@ -258,6 +258,32 @@
               </tui-textfield>
             </div>
           }
+          @if (textProps(); as text) {
+            <div class="grid gap-1">
+              <label for="angle">Font Size</label>
+              <tui-textfield tuiTextfieldSize="m" [tuiTextfieldCleaner]="false">
+                <input
+                  id="fontSize"
+                  name="fontSize"
+                  [invalid]="false"
+                  [(ngModel)]="text.fontSize"
+                  (change)="handleInputChange($event)"
+                  (blur)="handlePropsUpdate()"
+                  (keypress)="handleEnterPressed($event)"
+                  tuiTextfield
+                  type="number"
+                />
+              </tui-textfield>
+            </div>
+            <div class="mt-2 col-span-2">
+              <div>Font Family</div>
+              <app-custom-select
+                [options]="fontFamilies"
+                [value]="text.fontFamily"
+                (onUpdate)="onFontFamilySelection($event.id)"
+              />
+            </div>
+          }
           <div class="mt-2 col-span-2">
             <tui-textfield>
               <label tuiLabel>Choose color</label>
